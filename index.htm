@@ -2,9 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Открытка</title>
-    <script src="https://telegram.org"></script>
     <style>
         body {
             display: flex;
@@ -19,72 +18,85 @@
             text-align: center;
             overflow: hidden;
             user-select: none;
+            -webkit-user-select: none;
         }
         .heart {
-            font-size: 90px;
+            font-size: 95px;
             cursor: pointer;
-            transition: transform 0.15s ease;
+            transition: transform 0.12s ease;
             -webkit-tap-highlight-color: transparent;
+            padding: 20px;
         }
         h2 {
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 0 20px;
-            font-weight: 500;
+            font-weight: 600;
         }
         .subtext {
             color: #8e8e93;
-            font-size: 15px;
+            font-size: 16px;
             margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="heart" id="heart" onclick="tapHeart()">❤️</div>
+    <div class="heart" id="heart">❤️</div>
     <h2 id="text">Нажми на сердце 5 раз!</h2>
     <div class="subtext" id="counter">Нажато: 0 / 5</div>
 
+    <!-- Скрипт Telegram загружается в фоне и не тормозит страницу -->
+    <script src="https://telegram.org" async></script>
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-
         let count = 0;
         const heartEl = document.getElementById('heart');
         const textEl = document.getElementById('text');
         const counterEl = document.getElementById('counter');
 
-        function tapHeart() {
-            count++;
+        // Безопасная инициализация Telegram WebApp
+        window.addEventListener('load', () => {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+        });
 
-            // Безопасный вызов вибрации (не сломает код на ПК)
+        // Обработка нажатия (сработает всегда и мгновенно)
+        heartEl.addEventListener('click', () => {
+            count++;
+            const tg = window.Telegram && window.Telegram.WebApp;
+
+            // Вибрация на телефоне (через Telegram или стандартную вибрацию браузера)
             try {
-                if (tg.HapticFeedback) {
+                if (tg && tg.HapticFeedback) {
                     tg.HapticFeedback.impactOccurred('medium');
+                } else if (navigator.vibrate) {
+                    navigator.vibrate(40);
                 }
             } catch (e) {}
 
-            // Визуальная пульсация при клике
+            // Анимация пульсации
             heartEl.style.transform = `scale(${1 + count * 0.12})`;
             setTimeout(() => {
                 heartEl.style.transform = `scale(${1 + count * 0.05})`;
-            }, 150);
+            }, 120);
 
             if (count < 5) {
                 counterEl.innerText = `Нажато: ${count} / 5`;
             } else if (count === 5) {
-                // Финал открытки!
                 heartEl.innerText = "💖";
                 heartEl.style.transform = "scale(1.4)";
                 textEl.innerText = "✨ Сюрприз! Ты разблокировал открытку! ✨";
                 counterEl.innerText = "Это послание специально для тебя 💌";
                 
                 try {
-                    if (tg.HapticFeedback) {
+                    if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
+                    } else if (navigator.vibrate) {
+                        navigator.vibrate([100, 50, 100]);
                     }
                 } catch (e) {}
             }
-        }
+        });
     </script>
 </body>
 </html>
