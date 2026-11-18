@@ -14,7 +14,7 @@
             height: 100vh;
             margin: 0;
               /* Фоновая картинка bg.jpg с затемнением 0.45, чтобы белый текст хорошо читался */
-            background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('bg.jpg');
+            background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('bg.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -78,6 +78,8 @@
             cursor: pointer;
             transition: transform 0.12s ease;
             margin-bottom: 15px;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
         .bonus-img {
             width: 220px;           /* Ширина финальной картинки */
