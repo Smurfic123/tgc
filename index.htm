@@ -20,7 +20,7 @@
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none; /* Запрещаем браузеру перехватывать касания */
+            touch-action: none;
         }
         .screen {
             display: flex;
@@ -59,17 +59,11 @@
             padding: 20px;
         }
         .subtext { color: #8e8e93; font-size: 16px; margin-top: 10px; }
-        
-        .particle {
+        .version {
             position: fixed;
-            font-size: 26px;
-            pointer-events: none;
-            z-index: 10;
-            animation: fly 1.5s ease-out forwards;
-        }
-        @keyframes fly {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; }
+            bottom: 10px;
+            font-size: 11px;
+            color: #48484a;
         }
     </style>
 </head>
@@ -89,6 +83,9 @@
         <h2 id="text">Нажми на сердце 5 раз!</h2>
         <div class="subtext" id="counter">Нажато: 0 / 5</div>
     </div>
+
+    <!-- Индикатор версии, чтобы точно видеть, что сайт обновился -->
+    <div class="version">v.3.0</div>
 
     <script>
         window.addEventListener('load', () => {
@@ -116,7 +113,6 @@
             } catch (e) {}
         }
 
-        // Убегающая кнопка «Нет» (работает и на мышь, и на палец)
         function moveNoButton(e) {
             if (e) e.preventDefault();
             vibrate('light');
@@ -127,11 +123,9 @@
             noBtn.style.top = Math.max(20, Math.floor(Math.random() * maxY)) + 'px';
         }
 
-        // Срабатывает при наведении курсора (ПК) и в момент касания пальцем (Телефон)
         noBtn.addEventListener('pointerenter', moveNoButton);
         noBtn.addEventListener('pointerdown', moveNoButton);
 
-        // Кнопка «Да!» (надежный переход без зависимости от вибрации)
         yesBtn.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             questionScreen.classList.add('hidden');
@@ -139,40 +133,43 @@
             vibrate('medium');
         });
 
-        // Салют из эмодзи
-     // Надежный салют через встроенный движок анимаций браузера
+        // Самый надежный способ анимации салюта (через CSS transition)
         function launchFireworks() {
             const emojis = ['💖', '✨', '🎉', '❤️', '🌸', '🎊'];
-            for (let i = 0; i < 50; i++) {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight * 0.45;
+
+            for (let i = 0; i < 45; i++) {
                 const el = document.createElement('div');
                 el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
                 el.style.position = 'fixed';
-                el.style.left = '50%';
-                el.style.top = '45%';
-                el.style.fontSize = (20 + Math.random() * 18) + 'px';
+                el.style.left = centerX + 'px';
+                el.style.top = centerY + 'px';
+                el.style.fontSize = (22 + Math.random() * 16) + 'px';
                 el.style.pointerEvents = 'none';
                 el.style.zIndex = '9999';
+                el.style.transition = 'transform 1.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.3s ease-out';
+                el.style.transform = 'translate(-50%, -50%) scale(0.5)';
+                el.style.opacity = '1';
                 document.body.appendChild(el);
 
                 const angle = Math.random() * Math.PI * 2;
-                const dist = 90 + Math.random() * 230;
-                const dx = Math.cos(angle) * dist;
-                const dy = Math.sin(angle) * dist;
+                const dist = 80 + Math.random() * 220;
+                const targetX = Math.cos(angle) * dist;
+                const targetY = Math.sin(angle) * dist;
 
-                // Запускаем прямой полет каждой частицы
-                el.animate([
-                    { transform: 'translate(-50%, -50%) scale(0.5)', opacity: 1 },
-                    { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.2)`, opacity: 0 }
-                ], {
-                    duration: 1200 + Math.random() * 600,
-                    easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                    fill: 'forwards'
+                // Запускаем движение на следующем кадре отрисовки
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        el.style.transform = `translate(calc(-50% + ${targetX}px), calc(-50% + ${targetY}px)) scale(1.2)`;
+                        el.style.opacity = '0';
+                    });
                 });
 
-                setTimeout(() => el.remove(), 1900);
+                setTimeout(() => el.remove(), 1400);
             }
         }
-        // Кликер с сердцем
+
         let count = 0;
         const heartEl = document.getElementById('heart');
         const textEl = document.getElementById('text');
@@ -181,22 +178,23 @@
         heartEl.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             count++;
-            vibrate('heavy');
 
-            heartEl.style.transform = `scale(${1 + count * 0.12})`;
+            heartEl.style.transform = `scale(${1 + Math.min(count, 5) * 0.12})`;
             setTimeout(() => {
-                heartEl.style.transform = `scale(${1 + count * 0.05})`;
+                heartEl.style.transform = `scale(${1 + Math.min(count, 5) * 0.05})`;
             }, 120);
 
             if (count < 5) {
                 counterEl.innerText = `Нажато: ${count} / 5`;
-            } else if (count === 5) {
+                vibrate('heavy');
+            } else {
+                // Запускаем салют на 5-е и все последующие нажатия!
+                launchFireworks();
                 heartEl.innerText = "💖";
                 heartEl.style.transform = "scale(1.4)";
                 textEl.innerText = "✨ Сюрприз! Это послание специально для тебя! ✨";
-                counterEl.innerText = "Ты лучший(ая) 💌";
+                counterEl.innerText = "Нажимай ещё для нового салюта 💌";
                 vibrate('success');
-                launchFireworks();
             }
         });
     </script>
