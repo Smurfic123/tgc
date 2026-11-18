@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Открытка</title>
-    <!-- Обязательный скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -16,39 +15,74 @@
             margin: 0;
             background-color: #1c1c1e;
             color: white;
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             text-align: center;
-        }
-        .heart {
-            font-size: 80px;
-            cursor: pointer;
-            transition: transform 0.2s;
+            overflow: hidden;
             user-select: none;
         }
-        .heart:active {
-            transform: scale(1.3);
+        .heart {
+            font-size: 90px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        h2 {
+            margin-top: 20px;
+            padding: 0 20px;
+            font-weight: 500;
+        }
+        .subtext {
+            color: #8e8e93;
+            font-size: 15px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="heart" onclick="tapHeart()">❤️</div>
-    <h2 id="text">Нажми на сердце!</h2>
+    <div class="heart" id="heart" onclick="tapHeart()">❤️</div>
+    <h2 id="text">Нажми на сердце 5 раз!</h2>
+    <div class="subtext" id="counter">Нажато: 0 / 5</div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем приложение на весь экран
+        tg.ready();
+        tg.expand();
 
         let count = 0;
+        const heartEl = document.getElementById('heart');
+        const textEl = document.getElementById('text');
+        const counterEl = document.getElementById('counter');
+
         function tapHeart() {
             count++;
-            // Включаем легкую вибрацию на телефоне при нажатии
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            if (count === 5) {
-                document.getElementById('text').innerText = "✨ Сюрприз! Ты разблокировал открытку! ✨";
-                tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                document.getElementById('text').innerText = `Нажато раз: ${count} из 5`;
+
+            // Безопасный вызов вибрации (не сломает код на ПК)
+            try {
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
+            } catch (e) {}
+
+            // Визуальная пульсация при клике
+            heartEl.style.transform = `scale(${1 + count * 0.12})`;
+            setTimeout(() => {
+                heartEl.style.transform = `scale(${1 + count * 0.05})`;
+            }, 150);
+
+            if (count < 5) {
+                counterEl.innerText = `Нажато: ${count} / 5`;
+            } else if (count === 5) {
+                // Финал открытки!
+                heartEl.innerText = "💖";
+                heartEl.style.transform = "scale(1.4)";
+                textEl.innerText = "✨ Сюрприз! Ты разблокировал открытку! ✨";
+                counterEl.innerText = "Это послание специально для тебя 💌";
+                
+                try {
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                } catch (e) {}
             }
         }
     </script>
