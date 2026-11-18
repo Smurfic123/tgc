@@ -4,14 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Секретная открытка</title>
-    
-    <!-- 1. Подключаем скрипт Telegram -->
-    <script src="https://telegram.org"></script>
-    <!-- 2. Подключаем бесплатную библиотеку конфетти -->
-    <script src="https://jsdelivr.net"></script>
-
     <style>
-        /* Стили (CSS) — отвечают за внешний вид */
         body {
             display: flex;
             flex-direction: column;
@@ -23,30 +16,24 @@
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             text-align: center;
-            overflow: hidden; /* Запрещаем прокрутку, чтобы кнопка не улетала за край */
+            overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
         }
-
-        /* Контейнер для первого экрана с вопросом */
         .screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
         }
-
-        /* Класс hidden полностью прячет блок со страницы */
         .hidden {
             display: none !important;
         }
-
         .buttons-row {
             display: flex;
-            gap: 20px; /* Расстояние между кнопками Да и Нет */
+            gap: 20px;
             margin-top: 25px;
         }
-
         button {
             padding: 14px 32px;
             font-size: 18px;
@@ -56,20 +43,15 @@
             cursor: pointer;
             transition: transform 0.15s ease;
         }
-
         .btn-yes {
-            background-color: #30d158; /* Зеленый цвет Apple */
+            background-color: #30d158;
             color: white;
         }
-
         .btn-no {
-            background-color: #ff453a; /* Красный цвет Apple */
+            background-color: #ff453a;
             color: white;
-            /* Плавный перелет кнопки на новое место за 0.2 секунды */
             transition: top 0.2s ease, left 0.2s ease; 
         }
-
-        /* Стили для второго экрана с сердцем */
         .heart {
             font-size: 95px;
             cursor: pointer;
@@ -77,7 +59,6 @@
             -webkit-tap-highlight-color: transparent;
             padding: 20px;
         }
-
         .subtext {
             color: #8e8e93;
             font-size: 16px;
@@ -87,7 +68,6 @@
 </head>
 <body>
 
-    <!-- ЭКРАН 1: Вопрос и убегающая кнопка -->
     <div class="screen" id="question-screen">
         <div style="font-size: 70px;">🎁</div>
         <h2>Тебе пришел секретный подарок!<br>Будешь открывать?</h2>
@@ -97,66 +77,65 @@
         </div>
     </div>
 
-    <!-- ЭКРАН 2: Кликер с сердцем (изначально скрыт классом hidden) -->
     <div class="screen hidden" id="heart-screen">
         <div class="heart" id="heart">❤️</div>
         <h2 id="text">Нажми на сердце 5 раз!</h2>
         <div class="subtext" id="counter">Нажато: 0 / 5</div>
     </div>
 
-    <script>
-        // Логика (JavaScript) — отвечает за действия
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    <!-- Скрипты внизу с async — никогда не блокируют загрузку экрана -->
+    <script src="https://telegram.org" async></script>
+    <script src="https://jsdelivr.net" async></script>
 
-        // Находим все нужные элементы на странице по их id
+    <script>
+        window.addEventListener('load', () => {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+        });
+
         const questionScreen = document.getElementById('question-screen');
         const heartScreen = document.getElementById('heart-screen');
         const yesBtn = document.getElementById('yes-btn');
         const noBtn = document.getElementById('no-btn');
 
-        // --- ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ «НЕТ» ---
+        function vibrate(type) {
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback) {
+                    if (type === 'success') {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    } else {
+                        tg.HapticFeedback.impactOccurred(type);
+                    }
+                }
+            } catch (e) {}
+        }
+
         function moveNoButton() {
-            // Легкая вибрация при попытке нажать «Нет»
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-
-            // Переводим кнопку в режим свободного позиционирования поверх экрана
+            vibrate('light');
             noBtn.style.position = 'fixed';
-
-            // Вычисляем безопасные границы экрана (отнимаем размер самой кнопки, чтобы не ушла за край)
             const maxX = window.innerWidth - noBtn.offsetWidth - 20;
             const maxY = window.innerHeight - noBtn.offsetHeight - 20;
-
-            // Генерируем случайные координаты X и Y
             const randomX = Math.max(20, Math.floor(Math.random() * maxX));
             const randomY = Math.max(20, Math.floor(Math.random() * maxY));
-
-            // Применяем новые координаты
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
         }
 
-        // Кнопка убегает при наведении мыши (на ПК) и при касании пальцем (на телефоне)
         noBtn.addEventListener('mouseover', moveNoButton);
         noBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Отменяем само нажатие, чтобы кнопка успела убежать
+            e.preventDefault();
             moveNoButton();
         });
 
-        // --- ПЕРЕХОД КО ВТОРОМУ ЭКРАНУ ПО КНОПКЕ «ДА» ---
         yesBtn.addEventListener('click', () => {
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-            // Прячем первый экран и показываем второй
+            vibrate('medium');
             questionScreen.classList.add('hidden');
             heartScreen.classList.remove('hidden');
         });
 
-        // --- ЛОГИКА СЕРДЦА И КОНФЕТТИ ---
         let count = 0;
         const heartEl = document.getElementById('heart');
         const textEl = document.getElementById('text');
@@ -164,10 +143,7 @@
 
         heartEl.addEventListener('click', () => {
             count++;
-
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('heavy');
-            }
+            vibrate('heavy');
 
             heartEl.style.transform = `scale(${1 + count * 0.12})`;
             setTimeout(() => {
@@ -181,17 +157,13 @@
                 heartEl.style.transform = "scale(1.4)";
                 textEl.innerText = "✨ Сюрприз! Это послание специально для тебя! ✨";
                 counterEl.innerText = "Ты лучший(ая) 💌";
-                
-                if (tg.HapticFeedback) {
-                    tg.HapticFeedback.notificationOccurred('success');
-                }
+                vibrate('success');
 
-                // ЗАПУСКАЕМ ВЗРЫВ КОНФЕТТИ!
                 if (typeof confetti === 'function') {
                     confetti({
-                        particleCount: 120, // Количество частичек
-                        spread: 80,         // Угол разлета
-                        origin: { y: 0.6 }  // Точка выстрела (чуть ниже центра экрана)
+                        particleCount: 120,
+                        spread: 80,
+                        origin: { y: 0.6 }
                     });
                 }
             }
