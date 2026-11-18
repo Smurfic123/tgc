@@ -79,6 +79,13 @@
             transition: transform 0.12s ease;
             margin-bottom: 15px;
         }
+        .bonus-img {
+            width: 220px;           /* Ширина финальной картинки */
+            height: auto;           /* Высота подстроится сама, чтобы фото не сплющилось */
+            border-radius: 16px;    /* Красивые закругленные углы */
+            margin-top: 15px;       /* Отступ сверху от текста */
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Красивая тень */
+        }
 
     </style>
 </head>
@@ -96,8 +103,13 @@
     <div class="screen hidden" id="heart-screen">
        <img src="heart.jpg" id="heart" class="custom-img" alt="Картинка">
         <h2 id="text">Нажми на сердце 5 раз!</h2>
+
+        <img src="bonus.jpg" id="bonus-img" class="bonus-img hidden" alt="Сюрприз">
+
         <div class="subtext" id="counter">Нажато: 0 / 5</div>
     </div>
+
+    
 
     <!-- Индикатор версии, чтобы точно видеть, что сайт обновился -->
     <div class="version">v.3.0</div>
@@ -189,24 +201,33 @@
         const heartEl = document.getElementById('heart');
         const textEl = document.getElementById('text');
         const counterEl = document.getElementById('counter');
+        const bonusImg = document.getElementById('bonus-img');
 
-        heartEl.addEventListener('pointerdown', (e) => {
+      heartEl.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             count++;
 
-            heartEl.style.transform = `scale(${1 + Math.min(count, 5) * 0.12})`;
-            setTimeout(() => {
-                heartEl.style.transform = `scale(${1 + Math.min(count, 5) * 0.05})`;
-            }, 120);
-
             if (count < 5) {
+                // Вычисляем новый размер: +15% за каждый клик
+                const baseScale = 1 + count * 0.15;
+                
+                // Резкий "удар" пульса в момент касания (+25% за клик)
+                heartEl.style.transform = `scale(${1 + count * 0.25})`;
+                
+                // Через 120 мс картинка фиксируется в новом увеличенном размере
+                setTimeout(() => {
+                    heartEl.style.transform = `scale(${baseScale})`;
+                }, 120);
+
                 counterEl.innerText = `Нажато: ${count} / 5`;
                 vibrate('heavy');
             } else {
-                // Запускаем салют на 5-е и все последующие нажатия!
+                // На 5-й клик возвращаем нормальный размер (1.0), чтобы обе картинки красиво поместились!
+                heartEl.style.transform = "scale(1.0)";
+                
                 launchFireworks();
                 heartEl.src = "cat.jpg";
-                heartEl.style.transform = "scale(1.4)";
+                bonusImg.classList.remove('hidden');
                 textEl.innerText = "✨ Сюрприз! Это послание специально для тебя! ✨";
                 counterEl.innerText = "Нажимай ещё для нового салюта 💌";
                 vibrate('success');
