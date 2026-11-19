@@ -35,6 +35,11 @@
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
+
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
         }
         .screen {
             display: flex;
@@ -169,7 +174,7 @@
 
         // Самый надежный способ анимации салюта (через CSS transition)
         function launchFireworks() {
-            const emojis = ['💖', '✨', '🎉', '❤️', '🌸', '🎊'];
+            const emojis = ['💖', '✨', '❤️', '🌸', '🎊'];
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight * 0.45;
 
@@ -229,11 +234,13 @@
                 counterEl.innerText = `Нажато: ${count} / 5`;
                 vibrate('heavy');
             } else {
-                // На 5-й клик возвращаем нормальный размер (1.0), чтобы обе картинки красиво поместились!
+                // На 5-й клик возвращаем нормальный размер
                 heartEl.style.transform = "scale(1.0)";
                 
                 launchFireworks();
                 heartEl.src = "cat.jpg";
+                heartEl.style.borderRadius = "20px";          
+                // heartEl.style.border = "3px solid #e7d2b1";
                 bonusImg.classList.remove('hidden');
                 textEl.innerHTML = 'Если бы жизнь повторилась тысячу раз, я бы все равно выбирал тебя <span style="display: block; margin-top: 1px; font-size: 1.5em;">снова и снова...</span>';
                 counterEl.innerText = "нажимай на барсика для салюта и взрыва телефона";
