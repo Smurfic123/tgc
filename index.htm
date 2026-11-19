@@ -2,10 +2,18 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Открытка</title>
     <script src="https://telegram.org" async></script>
     <style>
+        h2 {
+            font-size: 38px;      /* Увеличивает размер букв (можешь поставить 35px или 42px) */
+            line-height: 1.25;    /* Делает расстояние между строками аккуратным */
+            margin: 10px 0;
+        }
         body {
             display: flex;
             flex-direction: column;
@@ -14,14 +22,14 @@
             height: 100vh;
             margin: 0;
               /* Фоновая картинка bg.jpg с затемнением 0.45, чтобы белый текст хорошо читался */
-            background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('bg.jpg');
+            background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url('bg.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-color: #1c1c1e; /* Запасной темный фон, пока грузится картинка */
 
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #feecce;
+            font-family: 'Great Vibes', cursive;
             text-align: center;
             overflow: hidden;
             user-select: none;
@@ -42,35 +50,32 @@
             margin-top: 25px;
         }
         button {
+            font-family: inherit;
             padding: 16px 36px;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            border: none;
-            border-radius: 14px;
+            border: 3px solid #feecce;
+            border-radius: 15px;
             cursor: pointer;
             transition: transform 0.15s ease;
             -webkit-tap-highlight-color: transparent;
         }
-        .btn-yes { background-color: #30d158; color: white; }
+        .btn-yes { background-color: #ba0025; color: white; }
         .btn-no {
-            background-color: #ff453a;
-            color: white;
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
+            border: 3px solid #ba0025;
             transition: top 0.2s ease, left 0.2s ease;
         }
         .heart {
-            font-size: 95px;
+            font-size: 100px;
             cursor: pointer;
             transition: transform 0.12s ease;
             -webkit-tap-highlight-color: transparent;
             padding: 20px;
         }
-        .subtext { color: #8e8e93; font-size: 16px; margin-top: 10px; }
-        .version {
-            position: fixed;
-            bottom: 10px;
-            font-size: 11px;
-            color: #48484a;
-        }
+        .subtext { color: #8e8e93; font-size: 25px; margin-top: 10px; }
+
         .custom-img {
             width: 180px;          /* Ширина картинки */
             height: 180px;         /* Высота картинки */
@@ -78,15 +83,19 @@
             cursor: pointer;
             transition: transform 0.12s ease;
             margin-bottom: 15px;
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
         }
         .bonus-img {
-            width: 220px;           /* Ширина финальной картинки */
+            width: 400px;           /* Ширина финальной картинки */
             height: auto;           /* Высота подстроится сама, чтобы фото не сплющилось */
             border-radius: 16px;    /* Красивые закругленные углы */
             margin-top: 15px;       /* Отступ сверху от текста */
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Красивая тень */
+        }
+        .gift-img {
+            width: 200px;          /* Ширина картинки (можешь поменять на 120px или 160px) */
+            height: 200px;         /* Высота картинки */
+            object-fit: contain;   /* Сохраняет пропорции картинки, не обрезая края */
+            margin-bottom: 10px;   /* Небольшой отступ вниз до текста */
         }
 
     </style>
@@ -94,27 +103,23 @@
 <body>
 
     <div class="screen" id="question-screen">
-        <div style="font-size: 70px;">🎁</div>
-        <h2>Тебе пришел секретный подарок!<br>Будешь открывать?</h2>
+        <img src="pic.png" class="gift-img" alt="открытка">
+        
+        <h2>Окрыточка<br>Будешь открывать?</h2>
         <div class="buttons-row">
-            <button class="btn-yes" id="yes-btn">Да!</button>
-            <button class="btn-no" id="no-btn">Нет</button>
+            <button class="btn-yes" id="yes-btn">Да</button>
+            <button class="btn-no" id="no-btn">НЕТ</button>
         </div>
     </div>
 
     <div class="screen hidden" id="heart-screen">
-       <img src="heart.png" id="heart" class="custom-img" alt="Картинка">
-        <h2 id="text">Нажми на сердце 5 раз!</h2>
+       <img src="heart.png" id="heart" class="custom-img" alt="сердечко">
+        <h2 id="text">Жми чтобы сердце билось</h2>
 
-        <img src="bonus.png" id="bonus-img" class="bonus-img hidden" alt="Сюрприз">
+        <img src="bonus.png" id="bonus-img" class="bonus-img hidden" alt="надпись">
 
         <div class="subtext" id="counter">Нажато: 0 / 5</div>
     </div>
-
-    
-
-    <!-- Индикатор версии, чтобы точно видеть, что сайт обновился -->
-    <div class="version">v.3.0</div>
 
     <script>
         window.addEventListener('load', () => {
@@ -211,10 +216,10 @@
 
             if (count < 5) {
                 // Вычисляем новый размер: +15% за каждый клик
-                const baseScale = 1 + count * 0.15;
+                const baseScale = 1 + count * 0.33;
                 
                 // Резкий "удар" пульса в момент касания (+25% за клик)
-                heartEl.style.transform = `scale(${1 + count * 0.25})`;
+                heartEl.style.transform = `scale(${1 + count * 0.50})`;
                 
                 // Через 120 мс картинка фиксируется в новом увеличенном размере
                 setTimeout(() => {
@@ -230,8 +235,8 @@
                 launchFireworks();
                 heartEl.src = "cat.jpg";
                 bonusImg.classList.remove('hidden');
-                textEl.innerText = "✨ Сюрприз! Это послание специально для тебя! ✨";
-                counterEl.innerText = "Нажимай ещё для нового салюта 💌";
+                textEl.innerHTML = 'Если бы жизнь повторилась тысячу раз, я бы все равно выбирал тебя <span style="display: block; margin-top: 1px; font-size: 1.5em;">снова и снова...</span>';
+                counterEl.innerText = "нажимай на барсика для салюта и взрыва телефона";
                 vibrate('success');
             }
         });
